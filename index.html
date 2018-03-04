@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>1</title>
+  <link href='main.css' rel='stylesheet' type='text/css'>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="wrapper">
+      <p class="question">Where did you eat today ?</p>
+      <ul class="items-wrapper">
+        <li class="item">
+         <button class="title">KFC</button>
+        </li>
+        <li class="item">
+          <button class="title">Mcdonalds</button>
+        </li>
+        <li class="item">
+          <button class="title">Kebab</button>
+        </li>
+        <li class="item">
+         <button class="title">Pizza</button>
+        </li>
+      </ul>
+      <form class="expense">
+          <label for="expense-value">How much money did you spend there?</label>
+          <input type="number" id="expense-value">
+          <input type="submit" id="expense-submit" value="Add">
+      </form>
+    </div>
+     <table class="journal">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Cost</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="list"></tbody>
+      </table>
+       <button class="calculate-total btn">Calculate Total</button>
+       <button class="calculate-food btn">Favorte Food</button>
+       <button class="average btn">Average Value</button>
+       <button class="clear btn">Clear All</button>
+      <div class="total-result">
+        <div class="total"></div>
+        <div class="fav-food"></div>
+        <div class="average-result"></div>
+      </div>
+  </div>
+ <script src="custom.js"></script>
+</body>
+</html>
