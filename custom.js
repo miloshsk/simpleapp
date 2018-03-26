@@ -22,7 +22,7 @@ class Item {
 }
 
 // Add class
-class Add {
+class ItemAdd {
 	addItemToList(item) {	
 		const row = document.createElement('tr');
 		row.innerHTML = `
@@ -35,6 +35,11 @@ class Add {
 		expenseValue.value = '';
 		expense.style.display = 'none';
 	}
+	deleteItem(target) {
+		if(target.className === 'delete-item') {
+			target.parentElement.parentElement.remove();
+		}
+	}
 	showError(error) {
 		const errorDiv = document.createElement('div');
 		errorDiv.className = 'error-message';	
@@ -44,11 +49,8 @@ class Add {
 			document.querySelector('.error-message').remove();
 		}, 2000);
 	}
-	deleteItem(target) {
-		if(target.className === 'delete-item') {
-			target.parentElement.parentElement.remove();
-		}
-	}
+}
+class ItemTotal{
 	totalSum() {
 		let arr =JSON.parse(localStorage.items);
 		let result = 0;
@@ -111,7 +113,7 @@ class Store {
 	static displayFood() {
 		const items = Store.getFood();
 		items.forEach( function(item) {
-			const add = new Add;
+			const add = new ItemAdd;
 			add.addItemToList(item);
 		});
 	}
@@ -148,7 +150,7 @@ expense.addEventListener('submit', function(e) {
 	e.preventDefault();
 	const cost = expenseValue.value;
 	const item = new Item(title, cost);
-	const add = new Add();
+	const add = new ItemAdd();
 
 	if(expenseValue.value === '') {
 		add.showError('Enter value');
@@ -160,9 +162,8 @@ expense.addEventListener('submit', function(e) {
 });
 
 //Detete items
-
 list.addEventListener('click', function(e) {
-	const add = new Add();
+	const add = new ItemAdd();
 	add.deleteItem(e.target);
 	switch(e.target.parentElement.previousElementSibling ) {
 		case null:
@@ -172,25 +173,31 @@ list.addEventListener('click', function(e) {
 	}
 })
 
+//Total cost
 calcTotalCost.addEventListener('click', function() {
 	const item = new Item();
-	const add = new Add();
-	add.totalSum(item);
+	const total = new ItemTotal();
+	total.totalSum(item);
 })
 
+//Fav food
 calcFavFood.addEventListener('click', function()  {
 	const item = new Item();
-	const add = new Add();
-	add.favFood(item);
+	const total = new ItemTotal();
+	total.favFood(item);
 })
+
+//Average cost
 calcAverageCost.addEventListener('click', function() {
 	const item = new Item();
-	const add = new Add();
-	add.averageSum(item);
+	const total = new ItemTotal();
+	total.averageSum(item);
 })
+
+//Clear
 clearBtn.addEventListener('click', function() {
 	const item = new Item();
-	const add = new Add();
+	const total = new ItemTotal();
 	Store.clearAll(item);
-	add.clearAll(item);
+	total.clearAll(item);
 })
