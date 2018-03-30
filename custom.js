@@ -1,5 +1,6 @@
 // Variables
 const places = document.querySelectorAll('.title'),
+	  items = document.querySelector('.items-wrapper'),
 	  list = document.querySelector('#list'),
 	  expense = document.querySelector('.expense'),
 	  expenseValue = document.querySelector('#expense-value'),
@@ -9,6 +10,7 @@ const places = document.querySelectorAll('.title'),
 	  totalCostResult = document.querySelector('.total'),
 	  averageCostResult = document.querySelector('.average-result'),
 	  //Buttons
+	  totalBtnWrapper = document.querySelector('.total-buttons-wrapper'),
 	  calcTotalCost = document.querySelector('.calculate-total'),
 	  calcAverageCost = document.querySelector('.average'),
 	  calcFavFood = document.querySelector('.calculate-food'),
@@ -40,16 +42,21 @@ class ItemAdd {
 			target.parentElement.parentElement.remove();
 		}
 	}
-	showError(error) {
-		const errorDiv = document.createElement('div');
-		errorDiv.className = 'error-message';	
-		errorDiv.appendChild(document.createTextNode(error));
-		expense.insertBefore(errorDiv, expenseValue );
+}
+
+//Class Message
+class Message {
+	showMessage(message) {
+		const messageDiv = document.createElement('div');
+		messageDiv.className = 'message';	
+		messageDiv.appendChild(document.createTextNode(message));
+		items.appendChild(messageDiv);
 		setTimeout(function() {
-			document.querySelector('.error-message').remove();
+			document.querySelector('.message').remove();
 		}, 2000);
 	}
 }
+//Class Total
 class ItemTotal{
 	totalSum() {
 		let arr =JSON.parse(localStorage.items);
@@ -98,7 +105,6 @@ class ItemTotal{
 		}
 	}
 }
-
 //LS class
 class Store {
 	static getFood() {
@@ -151,9 +157,10 @@ expense.addEventListener('submit', function(e) {
 	const cost = expenseValue.value;
 	const item = new Item(title, cost);
 	const add = new ItemAdd();
+	const mes = new Message();
 
 	if(expenseValue.value === '') {
-		add.showError('Enter value');
+		mes.showMessage('Enter value');
 	} else {
 		add.addItemToList(item);
 		Store.addFood(item);
@@ -171,33 +178,41 @@ list.addEventListener('click', function(e) {
 		default:
 			Store.removeFood(e.target.parentElement.previousElementSibling.textContent);
 	}
-})
+});
 
-//Total cost
-calcTotalCost.addEventListener('click', function() {
+//Total buttons events
+totalBtnWrapper.addEventListener('click', function(e) {
 	const item = new Item();
 	const total = new ItemTotal();
-	total.totalSum(item);
-})
-
-//Fav food
-calcFavFood.addEventListener('click', function()  {
-	const item = new Item();
-	const total = new ItemTotal();
-	total.favFood(item);
-})
-
-//Average cost
-calcAverageCost.addEventListener('click', function() {
-	const item = new Item();
-	const total = new ItemTotal();
-	total.averageSum(item);
-})
-
-//Clear
-clearBtn.addEventListener('click', function() {
-	const item = new Item();
-	const total = new ItemTotal();
-	Store.clearAll(item);
-	total.clearAll(item);
-})
+	const mes = new Message();
+	const target = e.target;
+	
+	switch(target) {
+		case calcFavFood:
+			if(localStorage.length !== 0) {
+				total.favFood(item);
+			} else {
+				mes.showMessage('Localstorage is empty');
+			};
+			break;
+		case calcTotalCost:
+			if(localStorage.length !== 0) {
+				total.totalSum(item);
+			} else {
+				mes.showMessage('Localstorage is empty');
+			};
+			break;
+		case calcAverageCost:
+			if(localStorage.length !== 0) {
+				total.averageSum(item);
+			} else {
+				mes.showMessage('Localstorage is empty');
+			};
+			break;
+		case clearBtn:
+			Store.clearAll(item);
+			total.clearAll(item);
+			mes.showMessage('Clear all');
+			break;
+	}
+});

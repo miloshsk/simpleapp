@@ -12,7 +12,8 @@ body {
 	font-family: Courier New;
 }
 .main-wrapper {
-	width: 500px;
+	max-width: 500px;
+	width: 100%;
 	margin: 0 auto;
 }
 .wrapper {
@@ -101,7 +102,7 @@ label {
 	background-color: #fff;
 	color: #325b9b;
 }
-.error-message {
+.message {
 	background-color: red;
 	color: #000;
 	font-size: 24px;
@@ -109,6 +110,7 @@ label {
 	padding: 5px 0;
 	width: 50%;
 	margin: 5px auto;
+	text-align: center;
 }
 thead, th, td {
 	text-align: center;
@@ -138,4 +140,12 @@ tr {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+}
+@media only screen and (max-width: 535px) {
+	.item {
+		flex-basis: 100%;
+	}
+	.btn {
+		width: 100%;
+	}
 }
