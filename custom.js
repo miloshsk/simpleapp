@@ -53,7 +53,7 @@ class Message {
 		items.appendChild(messageDiv);
 		setTimeout(function() {
 			document.querySelector('.message').remove();
-		}, 2000);
+		}, 1000);
 	}
 }
 //Class Total
