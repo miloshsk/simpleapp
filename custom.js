@@ -21,10 +21,6 @@ class Item {
 		this.title = title;
 		this.cost = cost;
 	}
-}
-
-// Add class
-class ItemAdd {
 	addItemToList(item) {	
 		const row = document.createElement('tr');
 		row.innerHTML = `
@@ -42,10 +38,6 @@ class ItemAdd {
 			target.parentElement.parentElement.remove();
 		}
 	}
-}
-
-//Class Message
-class Message {
 	showMessage(message) {
 		const messageDiv = document.createElement('div');
 		messageDiv.className = 'message';	
@@ -55,9 +47,6 @@ class Message {
 			document.querySelector('.message').remove();
 		}, 1000);
 	}
-}
-//Class Total
-class ItemTotal{
 	totalSum() {
 		let arr =JSON.parse(localStorage.items);
 		let result = 0;
@@ -105,6 +94,7 @@ class ItemTotal{
 		}
 	}
 }
+
 //LS class
 class Store {
 	static getFood() {
@@ -119,8 +109,8 @@ class Store {
 	static displayFood() {
 		const items = Store.getFood();
 		items.forEach( function(item) {
-			const add = new ItemAdd;
-			add.addItemToList(item);
+			const item = new Item;
+			item.addItemToList(item);
 		});
 	}
 	static addFood(item) {
@@ -156,22 +146,20 @@ expense.addEventListener('submit', function(e) {
 	e.preventDefault();
 	const cost = expenseValue.value;
 	const item = new Item(title, cost);
-	const add = new ItemAdd();
-	const mes = new Message();
 
 	if(expenseValue.value === '') {
-		mes.showMessage('Enter value');
+		item.showMessage('Enter value');
 	} else {
-		add.addItemToList(item);
+		item.addItemToList(item);
 		Store.addFood(item);
-		add.clearFields();
+		item.clearFields();
 	}
 });
 
 //Detete items
 list.addEventListener('click', function(e) {
-	const add = new ItemAdd();
-	add.deleteItem(e.target);
+	const item = new Item();
+	item.deleteItem(e.target);
 	switch(e.target.parentElement.previousElementSibling ) {
 		case null:
 			break;
@@ -183,36 +171,34 @@ list.addEventListener('click', function(e) {
 //Total buttons events
 totalBtnWrapper.addEventListener('click', function(e) {
 	const item = new Item();
-	const total = new ItemTotal();
-	const mes = new Message();
 	const target = e.target;
 	
 	switch(target) {
 		case calcFavFood:
 			if(localStorage.length !== 0) {
-				total.favFood(item);
+				item.favFood(item);
 			} else {
-				mes.showMessage('Localstorage is empty');
+				item.showMessage('Localstorage is empty');
 			};
 			break;
 		case calcTotalCost:
 			if(localStorage.length !== 0) {
-				total.totalSum(item);
+				item.totalSum(item);
 			} else {
-				mes.showMessage('Localstorage is empty');
+				item.showMessage('Localstorage is empty');
 			};
 			break;
 		case calcAverageCost:
 			if(localStorage.length !== 0) {
-				total.averageSum(item);
+				item.averageSum(item);
 			} else {
-				mes.showMessage('Localstorage is empty');
+				item.showMessage('Localstorage is empty');
 			};
 			break;
 		case clearBtn:
 			Store.clearAll(item);
-			total.clearAll(item);
-			mes.showMessage('Clear all');
+			item.clearAll(item);
+			item.showMessage('Clear all');
 			break;
 	}
 });
