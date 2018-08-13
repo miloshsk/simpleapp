@@ -15,39 +15,58 @@ const places = document.querySelectorAll('.title'),
 	  calcAverageCost = document.querySelector('.average'),
 	  calcFavFood = document.querySelector('.calculate-food'),
 	  clearBtn = document.querySelector('.clear');
-// Item class
-class Item {
+// FoodItem class
+class FoodItem {
 	constructor(title, cost) {
 		this.title = title;
 		this.cost = cost;
 	}
-	addItemToList(item) {	
+	addItemToList() {	
 		const row = document.createElement('tr');
 		row.innerHTML = `
-		<td>${item.title}</td>
-		<td>${item.cost}</td>
+		<td>${this.title}</td>
+		<td>${this.cost}</td>
 		<td><button class="delete-item"></button></td>`;
 		list.appendChild(row);
-	}
-	clearFields() {
-		expenseValue.value = '';
-		expense.style.display = 'none';
 	}
 	deleteItem(target) {
 		if(target.className === 'delete-item') {
 			target.parentElement.parentElement.remove();
 		}
 	}
-	showMessage(message) {
+}
+
+// ClearItem class
+class ClearItem { 
+	static clearFields() {
+		expenseValue.value = '';
+		expense.style.display = 'none';
+	}
+	static clearAll() {
+		for(let i = 0; i < totalResults.children.length; i++) {
+			totalResults.children[i].textContent = '';
+		}
+		while(list.firstChild) {
+			list.removeChild(list.firstChild);
+		}
+	}
+}
+
+//Class Message
+class Message {
+	static showMessage(message) {
 		const messageDiv = document.createElement('div');
 		messageDiv.className = 'message';	
 		messageDiv.appendChild(document.createTextNode(message));
 		items.appendChild(messageDiv);
 		setTimeout(function() {
 			document.querySelector('.message').remove();
-		}, 1000);
+		}, 2000);
 	}
-	totalSum() {
+}
+//Class TotalResults
+class TotalResults{
+	static totalSum() {
 		let arr =JSON.parse(localStorage.items);
 		let result = 0;
 		for(let i = 0; i < arr.length; i++) {
@@ -55,7 +74,7 @@ class Item {
 		}
 		totalCostResult.textContent = `Total cost: ${result}`;
 	}
-	favFood() {
+	static favFood() {
 		let arr =JSON.parse(localStorage.items);
 		let count = Object.create(null), max = 0, cur;
 		for (let x of arr) {
@@ -72,7 +91,7 @@ class Item {
 			favFoodResult.textContent = `Favorite food: ${res.join(' and ')}`;
 		}
 	}
-	averageSum() {
+	static averageSum() {
 		let arr =JSON.parse(localStorage.items);
 		let result = 0, cnt;
 		for(let i = 0; i < arr.length; i++) {
@@ -85,50 +104,41 @@ class Item {
 		averageCostResult.textContent = `Average value: ${(result / cnt).toFixed(2)}`; 
 		}
 	}
-	clearAll() {
-		for(let i = 0; i < totalResults.children.length; i++) {
-			totalResults.children[i].textContent = '';
-		}
-		while(list.firstChild) {
-			list.removeChild(list.firstChild);
-		}
-	}
 }
-
 //LS class
 class Store {
 	static getFood() {
-		let items;
-		if(localStorage.getItem('items') === null) {
-			items = [];
+		let fastFoodItems;
+		if(localStorage.getItem('fastFoodItems') === null) {
+			fastFoodItems = [];
 		} else {
-			items = JSON.parse(localStorage.getItem('items'));
+			fastFoodItems = JSON.parse(localStorage.getItem('fastFoodItems'));
 		}
-		return items;
+		return fastFoodItems;
 	}
 	static displayFood() {
-		const items = Store.getFood();
-		items.forEach( function(item) {
-			const item = new Item;
-			item.addItemToList(item);
+		const fastFoodItems = Store.getFood();
+		fastFoodItems.forEach( function(item) {
+			const foodItem = new FoodItem;
+			foodItem.addItemToList();
 		});
 	}
 	static addFood(item) {
-		const items = Store.getFood();
-		items.push(item);
-		localStorage.setItem('items', JSON.stringify(items));
+		const fastFoodItems = Store.getFood();
+		fastFoodItems.push(item);
+		localStorage.setItem('fastFoodItems', JSON.stringify(fastFoodItems));
 	}
 	static removeFood(cost) {
-		const items = Store.getFood();
-		items.forEach( function(item, index) {
+		const fastFoodItems = Store.getFood();
+		fastFoodItems.forEach( function(item, index) {
 			if(item.cost === cost) {
-				items.splice(index, 1);
+				fastFoodItems.splice(index, 1);
 			}
 		});
-		localStorage.setItem('items', JSON.stringify(items));
+		localStorage.setItem('fastFoodItems', JSON.stringify(fastFoodItems));
 	}
 	static clearAll(item) {
-		localStorage.removeItem('items');
+		localStorage.removeItem('fastFoodItems');
 	}
 }
 // Dp Ls
@@ -145,21 +155,21 @@ for(let i = 0; i < places.length; i++) {
 expense.addEventListener('submit', function(e) {
 	e.preventDefault();
 	const cost = expenseValue.value;
-	const item = new Item(title, cost);
+	const foodItem = new FoodItem(title, cost);
 
 	if(expenseValue.value === '') {
-		item.showMessage('Enter value');
+		Message.showMessage('Enter value');
 	} else {
-		item.addItemToList(item);
-		Store.addFood(item);
-		item.clearFields();
+		foodItem.addItemToList();
+		Store.addFood(foodItem);
+		ClearItem.clearFields();
 	}
 });
 
 //Detete items
 list.addEventListener('click', function(e) {
-	const item = new Item();
-	item.deleteItem(e.target);
+	const foodItem = new FoodItem();
+	foodItem.deleteItem(e.target);
 	switch(e.target.parentElement.previousElementSibling ) {
 		case null:
 			break;
@@ -170,35 +180,35 @@ list.addEventListener('click', function(e) {
 
 //Total buttons events
 totalBtnWrapper.addEventListener('click', function(e) {
-	const item = new Item();
+	const foodItem = new FoodItem();
 	const target = e.target;
 	
 	switch(target) {
 		case calcFavFood:
-			if(localStorage.length !== 0) {
-				item.favFood(item);
+			if(localStorage.getItem('fastFoodItems') !== null) {
+				TotalResults.favFood(foodItem);
 			} else {
-				item.showMessage('Localstorage is empty');
+				Message.showMessage('Localstorage is empty');
 			};
 			break;
 		case calcTotalCost:
-			if(localStorage.length !== 0) {
-				item.totalSum(item);
+			if(localStorage.getItem('fastFoodItems') !== null) {
+				TotalResults.totalSum(foodItem);
 			} else {
-				item.showMessage('Localstorage is empty');
+				Message.showMessage('Localstorage is empty');
 			};
 			break;
 		case calcAverageCost:
-			if(localStorage.length !== 0) {
-				item.averageSum(item);
+			if(localStorage.getItem('fastFoodItems') !== null) {
+				TotalResults.averageSum(foodItem);
 			} else {
-				item.showMessage('Localstorage is empty');
+				Message.showMessage('Localstorage is empty');
 			};
 			break;
 		case clearBtn:
-			Store.clearAll(item);
-			item.clearAll(item);
-			item.showMessage('Clear all');
+			Store.clearAll(foodItem);
+			ClearItem.clearAll(foodItem);
+			Message.showMessage('Clear all');
 			break;
 	}
 });
