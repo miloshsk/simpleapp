@@ -67,18 +67,18 @@ class Message {
 //Class TotalResults
 class TotalResults{
 	static totalSum() {
-		let arr =JSON.parse(localStorage.items);
+		let arr = JSON.parse(localStorage.getItem('fastFoodItems'));
 		let result = 0;
-		for(let i = 0; i < arr.length; i++) {
-			result += +arr[i].cost;
+		for(let item of arr) {
+			result += +item.cost;
 		}
 		totalCostResult.textContent = `Total cost: ${result}`;
 	}
 	static favFood() {
-		let arr =JSON.parse(localStorage.items);
+		let arr = JSON.parse(localStorage.getItem('fastFoodItems'));
 		let count = Object.create(null), max = 0, cur;
-		for (let x of arr) {
-  		if ((cur = count[x.title] = ~~count[x.title] + 1) > max) {
+		for (let item of arr) {
+  		if ((cur = count[item.title] = ~~count[item.title] + 1) > max) {
 		    max = cur;
 		  }
 		}
@@ -92,16 +92,15 @@ class TotalResults{
 		}
 	}
 	static averageSum() {
-		let arr =JSON.parse(localStorage.items);
-		let result = 0, cnt;
-		for(let i = 0; i < arr.length; i++) {
+		let arr = JSON.parse(localStorage.getItem('fastFoodItems'));
+		let result = 0, i;
+		for( i = 0; i < arr.length; i++) {
 			result += +arr[i].cost;
-			cnt = i + 1;
 		}
 		if(result === 0) {
 			averageCostResult.textContent = 'Average value: 0';
 		} else {
-		averageCostResult.textContent = `Average value: ${(result / cnt).toFixed(2)}`; 
+			averageCostResult.textContent = `Average value: ${(result / i).toFixed(2)}`; 
 		}
 	}
 }
@@ -119,7 +118,7 @@ class Store {
 	static displayFood() {
 		const fastFoodItems = Store.getFood();
 		fastFoodItems.forEach( function(item) {
-			const foodItem = new FoodItem;
+			const foodItem = new FoodItem(item.title,item.cost);
 			foodItem.addItemToList();
 		});
 	}
@@ -182,7 +181,6 @@ list.addEventListener('click', function(e) {
 totalBtnWrapper.addEventListener('click', function(e) {
 	const foodItem = new FoodItem();
 	const target = e.target;
-	
 	switch(target) {
 		case calcFavFood:
 			if(localStorage.getItem('fastFoodItems') !== null) {
