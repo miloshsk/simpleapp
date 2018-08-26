@@ -1,212 +1,223 @@
-// Variables
-const places = document.querySelectorAll('.title'),
-	  items = document.querySelector('.items-wrapper'),
-	  list = document.querySelector('#list'),
-	  expense = document.querySelector('.expense'),
-	  expenseValue = document.querySelector('#expense-value'),
-	  //Total reuslts
-	  totalResults = document.querySelector('.total-result'),
-	  favFoodResult = document.querySelector('.fav-food'),
-	  totalCostResult = document.querySelector('.total'),
-	  averageCostResult = document.querySelector('.average-result'),
-	  //Buttons
-	  totalBtnWrapper = document.querySelector('.total-buttons-wrapper'),
-	  calcTotalCost = document.querySelector('.calculate-total'),
-	  calcAverageCost = document.querySelector('.average'),
-	  calcFavFood = document.querySelector('.calculate-food'),
-	  clearBtn = document.querySelector('.clear');
-// FoodItem class
-class FoodItem {
-	constructor(title, cost) {
+// Item Controller
+const FoodItemCtrl = (function(){
+	// Item Constructor
+	const FoodItem = function (id, title, cost) {
+		this.id = id;
 		this.title = title;
 		this.cost = cost;
 	}
-	addItemToList() {	
-		const row = document.createElement('tr');
-		row.innerHTML = `
-		<td>${this.title}</td>
-		<td>${this.cost}</td>
-		<td><button class="delete-item"></button></td>`;
-		list.appendChild(row);
+	// Data Structure
+	const data = {
+		foodItemID: 0,
+		foodItemTitle: '',
+		foodItemCost: 0,
+		foodItems: []
 	}
-	deleteItem(target) {
-		if(target.className === 'delete-item') {
-			target.parentElement.parentElement.remove();
-		}
-	}
-}
-
-// ClearItem class
-class ClearItem { 
-	static clearFields() {
-		expenseValue.value = '';
-		expense.style.display = 'none';
-	}
-	static clearAll() {
-		for(let i = 0; i < totalResults.children.length; i++) {
-			totalResults.children[i].textContent = '';
-		}
-		while(list.firstChild) {
-			list.removeChild(list.firstChild);
-		}
-	}
-}
-
-//Class Message
-class Message {
-	static showMessage(message) {
-		const messageDiv = document.createElement('div');
-		messageDiv.className = 'message';	
-		messageDiv.appendChild(document.createTextNode(message));
-		items.appendChild(messageDiv);
-		setTimeout(function() {
-			document.querySelector('.message').remove();
-		}, 2000);
-	}
-}
-//Class TotalResults
-class TotalResults{
-	static totalSum() {
-		let arr = JSON.parse(localStorage.getItem('fastFoodItems'));
-		let result = 0;
-		for(let item of arr) {
-			result += +item.cost;
-		}
-		totalCostResult.textContent = `Total cost: ${result}`;
-	}
-	static favFood() {
-		let arr = JSON.parse(localStorage.getItem('fastFoodItems'));
-		let count = Object.create(null), max = 0, cur;
-		for (let item of arr) {
-  		if ((cur = count[item.title] = ~~count[item.title] + 1) > max) {
-		    max = cur;
-		  }
-		}
-		let res = Object.keys(count).filter(function(x) {
-			return count[x] === max;
-		});
-		if(res.length === 0) {
-			favFoodResult.textContent = 'You haven\'t eaten anything yet';
-		} else {
-			favFoodResult.textContent = `Favorite food: ${res.join(' and ')}`;
-		}
-	}
-	static averageSum() {
-		let arr = JSON.parse(localStorage.getItem('fastFoodItems'));
-		let result = 0, i;
-		for( i = 0; i < arr.length; i++) {
-			result += +arr[i].cost;
-		}
-		if(result === 0) {
-			averageCostResult.textContent = 'Average value: 0';
-		} else {
-			averageCostResult.textContent = `Average value: ${(result / i).toFixed(2)}`; 
-		}
-	}
-}
-//LS class
-class Store {
-	static getFood() {
-		let fastFoodItems;
-		if(localStorage.getItem('fastFoodItems') === null) {
-			fastFoodItems = [];
-		} else {
-			fastFoodItems = JSON.parse(localStorage.getItem('fastFoodItems'));
-		}
-		return fastFoodItems;
-	}
-	static displayFood() {
-		const fastFoodItems = Store.getFood();
-		fastFoodItems.forEach( function(item) {
-			const foodItem = new FoodItem(item.title,item.cost);
-			foodItem.addItemToList();
-		});
-	}
-	static addFood(item) {
-		const fastFoodItems = Store.getFood();
-		fastFoodItems.push(item);
-		localStorage.setItem('fastFoodItems', JSON.stringify(fastFoodItems));
-	}
-	static removeFood(cost) {
-		const fastFoodItems = Store.getFood();
-		fastFoodItems.forEach( function(item, index) {
-			if(item.cost === cost) {
-				fastFoodItems.splice(index, 1);
+	return {
+		getItems () {
+			return data.foodItems;
+		},
+		setTitle () {
+			data.foodItemTitle = this.dataset.food;
+		},
+		setCost (cost) {
+			data.foodItemCost = cost;
+		},
+		setID () {
+			data.foodItemsID = data.foodItems.length;
+		},
+		addItem () {
+			const newFoodItem = new FoodItem(data.foodItemsID, data.foodItemTitle, data.foodItemCost);
+			data.foodItems.push(newFoodItem);
+			return newFoodItem;
+		},
+		removeItem (e) {
+			const id = parseInt(e.target.closest('tr').getAttribute('data-id'));
+			data.foodItems.forEach(function(item, index) {
+				if(item.id === id) {
+					data.foodItems.splice(index, 1);
+				}
+			});
+		},
+		getTotalSum () {
+			let result = 0;
+			for(let item of data.foodItems) {
+				result += item.cost;
 			}
+			return result;
+		},
+		getTotalResult() {
+			const result = this.getTotalSum();
+			const message = `Total cost: ${result}`;
+			return message;
+		},
+		getAverageValue(){
+			const result = this.getTotalSum();
+			let message = '';
+			if(result === 0) {
+				message = 'Average value: 0';
+			} else {
+				message = `Average value: ${(result / data.foodItems.length).toFixed(2)}`;
+			}
+			return message;
+		},
+		getFavoriteFood() {
+			let count = Object.create(null), max = 0, message = '', current;
+			for(let item of data.foodItems) {
+				if((current = count[item.title] = ~~count[item.tile] + 1) > max){
+					max = current;
+				}
+			}
+			let result = Object.keys(count).filter(function(x) {
+				return count[x] === max;
+			});
+			if(result.length === 0) {
+				message = 'You haven\'t eaten anything yet';
+			} else {
+				message = `Favorite food: ${result.join(', ')}`;
+			}
+			return message;
+		},
+		clearItems() {
+			data.foodItems = [];
+		}
+	}
+})();
+
+// UI Controller
+const UICtrl = (function(){
+	const UISelectors = {
+		itemList: '#list',
+		foodTitle: '.title',
+		expense: '.expense',
+		expenseValue: '#expense-value',
+		deleteItem: '.delete-item',
+		totalResultBtn: '.calculate-total',
+		totalResultBlock: '.total',
+		averageValueBtn: '.average',
+		averageValueBlock: '.average-result',
+		favoriteFoodBtn: '.favorite-food',
+		favoriteFoodBlock: '.fav-food',
+		clearBtn: '.clear'
+	}
+	return {
+		populateItemList (items){
+			let html = '';
+			items.forEach(function(item) {
+				html += `<tr data-id="${item.id}">
+						 <td>${item.title}</td>
+						 <td>${item.cost}</td>
+						 <td><button class="delete-item"></button></td></tr>`;
+			});
+			document.querySelector(UISelectors.itemList).innerHTML = html;
+		},
+		additemToList (item) {
+			const row = document.createElement('tr');
+			row.dataset.id = item.id;
+			row.innerHTML = ` <td>${item.title}</td>
+						 <td>${item.cost}</td>
+						 <td><button class="delete-item"></button></td>`;
+			document.querySelector(UISelectors.itemList).appendChild(row);
+		},
+		getSelectors () {
+			return UISelectors;
+		},
+		showExpenseForm () {
+			document.querySelector(UISelectors.expense).style.display = 'block';
+		},
+		getCostValue () {
+			const costValue = document.querySelector(UISelectors.expenseValue).value;
+			let result;
+			if(costValue) {
+				result = parseInt(costValue);
+			} else {
+				result = 0
+			} 
+			return result;
+		},
+		hideExpenseForm () {
+			document.querySelector(UISelectors.expense).style.display = 'none';
+			document.querySelector(UISelectors.expenseValue).value = '';
+		},
+		removeItemRow (e) {
+			if(e.target.className == UISelectors.deleteItem.slice(1)) {
+				e.target.closest('tr').remove();
+			}
+		},
+		showTotal (selector, message) {
+			document.querySelector(selector).textContent = message;
+		},
+		clearFoodItems () {
+			const list = document.querySelector(UISelectors.itemList);
+			while(list.firstChild) {
+				list.removeChild(list.firstChild);
+			}
+		}
+	}
+})();
+
+// App Controller
+
+const App = (function(FoodItemCtrl, UICtrl){
+	let items, UISelectors;
+	const loadEventListeners = function() {
+		UISelectors = UICtrl.getSelectors();
+		Array.from(document.querySelectorAll(UISelectors.foodTitle)).forEach(function(item) {
+			item.addEventListener('click',openExpenseForm );
 		});
-		localStorage.setItem('fastFoodItems', JSON.stringify(fastFoodItems));
+		document.querySelector(UISelectors.expense).addEventListener('submit',createFoodItemRow );
+		document.querySelector(UISelectors.itemList).addEventListener('click',removeItemRow);
+		document.querySelector(UISelectors.totalResultBtn).addEventListener('click', showTotalCost );
+		document.querySelector(UISelectors.averageValueBtn).addEventListener('click', showAverageValue);
+		document.querySelector(UISelectors.favoriteFoodBtn).addEventListener('click',showFavoriteFood );
+		document.querySelector(UISelectors.clearBtn).addEventListener('click',clearAll );
 	}
-	static clearAll(item) {
-		localStorage.removeItem('fastFoodItems');
+	const showTotalCost = function() {
+		const result = FoodItemCtrl.getTotalResult();
+		UICtrl.showTotal(UISelectors.totalResultBlock, result);
 	}
-}
-// Dp Ls
-document.addEventListener('DOMContentLoaded', Store.displayFood);
-// Button click event
-for(let i = 0; i < places.length; i++) {
-	places[i].addEventListener('click', function() {
-		expense.style.display = 'block';
-		title = this.textContent;
-	})
-}
+	const showAverageValue = function() {
+		const averageVal = FoodItemCtrl.getAverageValue();
+		UICtrl.showTotal(UISelectors.averageValueBlock, averageVal);
+	}
+	const showFavoriteFood = function() {
+		const favoriteFood = FoodItemCtrl.getFavoriteFood();
+		UICtrl.showTotal(UISelectors.favoriteFoodBlock, favoriteFood);
+	}
+	const clearAll = function() {
+		FoodItemCtrl.clearItems();
+		UICtrl.hideExpenseForm();
+		UICtrl.clearFoodItems();
+		showTotalCost();
+		showAverageValue();
+		showFavoriteFood();
+	}
+	const removeItemRow = function(e) {
+		UICtrl.removeItemRow(e);
+		FoodItemCtrl.removeItem(e);
+	}
+	const createFoodItemRow = function(e) {
+		e.preventDefault();
+		const cost = UICtrl.getCostValue();
+		FoodItemCtrl.setCost(cost);
 
-//Form submit event
-expense.addEventListener('submit', function(e) {
-	e.preventDefault();
-	const cost = expenseValue.value;
-	const foodItem = new FoodItem(title, cost);
+		UICtrl.hideExpenseForm();
+		const newFoodItem = FoodItemCtrl.addItem();
 
-	if(expenseValue.value === '') {
-		Message.showMessage('Enter value');
-	} else {
-		foodItem.addItemToList();
-		Store.addFood(foodItem);
-		ClearItem.clearFields();
+		UICtrl.additemToList(newFoodItem);
 	}
-});
+	const openExpenseForm = function() {
+		FoodItemCtrl.setID();
+		FoodItemCtrl.setTitle.call(this);
+		UICtrl.showExpenseForm();
+	}
+	return {
+		init: function(){
+			items = FoodItemCtrl.getItems();
+			UICtrl.populateItemList(items);
+			loadEventListeners();
+		}
+	}
+})(FoodItemCtrl, UICtrl);
 
-//Detete items
-list.addEventListener('click', function(e) {
-	const foodItem = new FoodItem();
-	foodItem.deleteItem(e.target);
-	switch(e.target.parentElement.previousElementSibling ) {
-		case null:
-			break;
-		default:
-			Store.removeFood(e.target.parentElement.previousElementSibling.textContent);
-	}
-});
-
-//Total buttons events
-totalBtnWrapper.addEventListener('click', function(e) {
-	const foodItem = new FoodItem();
-	const target = e.target;
-	switch(target) {
-		case calcFavFood:
-			if(localStorage.getItem('fastFoodItems') !== null) {
-				TotalResults.favFood(foodItem);
-			} else {
-				Message.showMessage('Localstorage is empty');
-			};
-			break;
-		case calcTotalCost:
-			if(localStorage.getItem('fastFoodItems') !== null) {
-				TotalResults.totalSum(foodItem);
-			} else {
-				Message.showMessage('Localstorage is empty');
-			};
-			break;
-		case calcAverageCost:
-			if(localStorage.getItem('fastFoodItems') !== null) {
-				TotalResults.averageSum(foodItem);
-			} else {
-				Message.showMessage('Localstorage is empty');
-			};
-			break;
-		case clearBtn:
-			Store.clearAll(foodItem);
-			ClearItem.clearAll(foodItem);
-			Message.showMessage('Clear all');
-			break;
-	}
-});
+App.init();
