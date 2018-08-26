@@ -24,7 +24,13 @@ const FoodItemCtrl = (function(){
 			data.foodItemCost = cost;
 		},
 		setID () {
-			data.foodItemsID = data.foodItems.length;
+			let id;
+			if(data.foodItems.length > 0) {
+				id = data.foodItems[data.foodItems.length - 1].id + 1;
+			} else {
+				id = 0;
+			}
+			data.foodItemsID = id;
 		},
 		addItem () {
 			const newFoodItem = new FoodItem(data.foodItemsID, data.foodItemTitle, data.foodItemCost);
@@ -98,9 +104,23 @@ const UICtrl = (function(){
 		averageValueBlock: '.average-result',
 		favoriteFoodBtn: '.favorite-food',
 		favoriteFoodBlock: '.fav-food',
-		clearBtn: '.clear'
+		clearBtn: '.clear',
+		message: '.message'
 	}
 	return {
+		createMessage(message) {
+			if(document.querySelector(UISelectors.message)) {
+				return false;
+			} else {
+				const messageBlock = document.createElement('div');
+				messageBlock.classList.add(UISelectors.message.slice(1));
+				messageBlock.appendChild(document.createTextNode(message));
+				document.body.appendChild(messageBlock);
+				setTimeout(function() {
+					messageBlock.remove();
+				}, 1500);
+			}
+		},
 		populateItemList (items){
 			let html = '';
 			items.forEach(function(item) {
@@ -199,12 +219,15 @@ const App = (function(FoodItemCtrl, UICtrl){
 	const createFoodItemRow = function(e) {
 		e.preventDefault();
 		const cost = UICtrl.getCostValue();
-		FoodItemCtrl.setCost(cost);
-
-		UICtrl.hideExpenseForm();
-		const newFoodItem = FoodItemCtrl.addItem();
-
-		UICtrl.additemToList(newFoodItem);
+		if(cost) {
+			FoodItemCtrl.setCost(cost);
+			UICtrl.hideExpenseForm();
+			const newFoodItem = FoodItemCtrl.addItem();
+			UICtrl.additemToList(newFoodItem);
+		} else {
+			UICtrl.createMessage('Enter value');
+		}
+		
 	}
 	const openExpenseForm = function() {
 		FoodItemCtrl.setID();
