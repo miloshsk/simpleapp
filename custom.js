@@ -1,3 +1,41 @@
+// Storage Controller
+const StorageCtrl = (function() {
+	return {
+		storeItem (foodItem) {
+			let foodItems;
+			if(localStorage.getItem('foodItems') === null) {
+				foodItems = [];
+				foodItems.push(foodItem);
+				localStorage.setItem('foodItems', JSON.stringify(foodItems));
+			} else {
+				foodItems = JSON.parse(localStorage.getItem('foodItems'));
+				foodItems.push(foodItem);
+				localStorage.setItem('foodItems', JSON.stringify(foodItems));
+			}
+		},
+		getItemsFromStorage () {
+			let foodItems;
+			if(localStorage.getItem('foodItems') === null) {
+				foodItems = [];
+			} else {
+				foodItems = JSON.parse(localStorage.getItem('foodItems'));
+			}
+			return foodItems;
+		},
+		deleteItemFromStorage(id) {
+			let items = JSON.parse(localStorage.getItem('foodItems'));
+			items.forEach(function(item, index) {
+				if(id === item.id) {
+					items.splice(index, 1);
+				}
+			});
+			localStorage.setItem('foodItems', JSON.stringify(items));
+		},
+		clearStorage() {
+			localStorage.removeItem('foodItems');
+		} 
+	}
+})();
 // Item Controller
 const FoodItemCtrl = (function(){
 	// Item Constructor
@@ -11,7 +49,7 @@ const FoodItemCtrl = (function(){
 		foodItemID: 0,
 		foodItemTitle: '',
 		foodItemCost: 0,
-		foodItems: []
+		foodItems: StorageCtrl.getItemsFromStorage()
 	}
 	return {
 		getItems () {
@@ -24,15 +62,25 @@ const FoodItemCtrl = (function(){
 			data.foodItemCost = cost;
 		},
 		setID () {
-			data.foodItemsID = data.foodItems.length;
+			let id;
+			if(data.foodItems.length > 0) {
+				id = data.foodItems[data.foodItems.length - 1].id + 1;
+			} else {
+				id = 0;
+			}
+			data.foodItemsID = id;
 		},
 		addItem () {
 			const newFoodItem = new FoodItem(data.foodItemsID, data.foodItemTitle, data.foodItemCost);
 			data.foodItems.push(newFoodItem);
 			return newFoodItem;
 		},
-		removeItem (e) {
+		getId(e) {
 			const id = parseInt(e.target.closest('tr').getAttribute('data-id'));
+			return id;
+		},
+		removeItem (newId) {
+			const id = newId;
 			data.foodItems.forEach(function(item, index) {
 				if(item.id === id) {
 					data.foodItems.splice(index, 1);
@@ -98,9 +146,23 @@ const UICtrl = (function(){
 		averageValueBlock: '.average-result',
 		favoriteFoodBtn: '.favorite-food',
 		favoriteFoodBlock: '.fav-food',
-		clearBtn: '.clear'
+		clearBtn: '.clear',
+		message: '.message'
 	}
 	return {
+		createMessage(message) {
+			if(document.querySelector(UISelectors.message)) {
+				return false;
+			} else {
+				const messageBlock = document.createElement('div');
+				messageBlock.classList.add(UISelectors.message.slice(1));
+				messageBlock.appendChild(document.createTextNode(message));
+				document.body.appendChild(messageBlock);
+				setTimeout(function() {
+					messageBlock.remove();
+				}, 1500);
+			}
+		},
 		populateItemList (items){
 			let html = '';
 			items.forEach(function(item) {
@@ -158,7 +220,7 @@ const UICtrl = (function(){
 
 // App Controller
 
-const App = (function(FoodItemCtrl, UICtrl){
+const App = (function(FoodItemCtrl, UICtrl, StorageCtrl){
 	let items, UISelectors;
 	const loadEventListeners = function() {
 		UISelectors = UICtrl.getSelectors();
@@ -188,23 +250,30 @@ const App = (function(FoodItemCtrl, UICtrl){
 		FoodItemCtrl.clearItems();
 		UICtrl.hideExpenseForm();
 		UICtrl.clearFoodItems();
+		StorageCtrl.clearStorage();
 		showTotalCost();
 		showAverageValue();
 		showFavoriteFood();
 	}
 	const removeItemRow = function(e) {
+		const id = FoodItemCtrl.getId(e);
 		UICtrl.removeItemRow(e);
-		FoodItemCtrl.removeItem(e);
+		FoodItemCtrl.removeItem(id);
+		StorageCtrl.deleteItemFromStorage(id);
 	}
 	const createFoodItemRow = function(e) {
 		e.preventDefault();
 		const cost = UICtrl.getCostValue();
-		FoodItemCtrl.setCost(cost);
-
-		UICtrl.hideExpenseForm();
-		const newFoodItem = FoodItemCtrl.addItem();
-
-		UICtrl.additemToList(newFoodItem);
+		if(cost) {
+			FoodItemCtrl.setCost(cost);
+			UICtrl.hideExpenseForm();
+			const newFoodItem = FoodItemCtrl.addItem();
+			UICtrl.additemToList(newFoodItem);
+			StorageCtrl.storeItem(newFoodItem);
+		} else {
+			UICtrl.createMessage('Enter value');
+		}
+		
 	}
 	const openExpenseForm = function() {
 		FoodItemCtrl.setID();
@@ -218,6 +287,6 @@ const App = (function(FoodItemCtrl, UICtrl){
 			loadEventListeners();
 		}
 	}
-})(FoodItemCtrl, UICtrl);
+})(FoodItemCtrl, UICtrl, StorageCtrl);
 
 App.init();
