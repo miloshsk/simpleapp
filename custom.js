@@ -112,7 +112,7 @@ const FoodItemCtrl = (function(){
 		getFavoriteFood() {
 			let count = Object.create(null), max = 0, message = '', current;
 			for(let item of data.foodItems) {
-				if((current = count[item.title] = ~~count[item.tile] + 1) > max){
+				if((current = count[item.title] = ~~count[item.title] + 1) > max){
 					max = current;
 				}
 			}
