@@ -33,7 +33,7 @@ const StorageCtrl = (function() {
 		},
 		clearStorage() {
 			localStorage.removeItem('foodItems');
-		} 
+		}
 	}
 })();
 // Item Controller
@@ -195,7 +195,7 @@ const UICtrl = (function(){
 				result = parseInt(costValue);
 			} else {
 				result = 0
-			} 
+			}
 			return result;
 		},
 		hideExpenseForm () {
@@ -274,7 +274,6 @@ const App = (function(FoodItemCtrl, UICtrl, StorageCtrl){
 		} else {
 			UICtrl.createMessage('Enter value');
 		}
-		
 	}
 	const openExpenseForm = function() {
 		FoodItemCtrl.setID();
